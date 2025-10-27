@@ -3,40 +3,51 @@ import Message from "../models/Message.js";
 import User from "../models/User.js";
 
 
-export const getAllContacts = async (req,res) => {
+export const getAllContacts = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
-        const filteredUsers = await User.find({_id:{$ne:loggedInUserId}}).select("-password");
+        const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
         res.status(200).json(filteredUsers);
     } catch (error) {
-        res.status(500).json({message:"Server error"});
-}
+        res.status(500).json({ message: "Server error" });
+    }
 }
 
-export const getMessagesByUserId = async (req,res) => {
+export const getMessagesByUserId = async (req, res) => {
     try {
-        const myId = req.user
+        const myId = req.user._id;
         const { id: userToChatId } = req.params;
         const messages = await Message.find({
-            $or:[
-                {senderId:myId,receiverId:userToChatId},
-                {senderId:userToChatId,receiverId:myId}
+            $or: [
+                { senderId: myId, receiverId: userToChatId },
+                { senderId: userToChatId, receiverId: myId }
             ],
         })
         res.status(200).json(messages)
     } catch (error) {
-        console.log("Error in getMessages controller: ". error.message);
-        res.status(500).json({error:"Internal server error"});
+        console.log("Error in getMessages controller:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 };
 
-export const sendMessage = async (req,res) => {
+export const sendMessage = async (req, res) => {
     try {
         const { text, image } = req.body;
-        const { id: receiverId } = req.bpdy;
+        const { id: receiverId } = req.params;
         const senderId = req.user._id;
+
+        if (!text && !image) {
+            return res.status(400).json({ message: "Text or image is required." });
+        }
+        if (senderId.equals(receiverId)) {
+            return res.status(400).json({ message: "Cannot send messages to yourself." });
+        }
+        const receiverExists = await User.exists({ _id: receiverId });
+        if (!receiverExists) {
+            return res.status(404).json({ message: "Receiver not found." });
+        }
         let imageUrl;
-        if(image){
+        if (image) {
             // upload base 64 image to cloudinary
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
@@ -45,7 +56,7 @@ export const sendMessage = async (req,res) => {
             senderId,
             receiverId,
             text,
-            image:imageUrl,
+            image: imageUrl,
         })
 
         await newMessage.save()
@@ -53,7 +64,27 @@ export const sendMessage = async (req,res) => {
         // realtime chat using socket.io
         res.status(201).json(newMessage);
     } catch (error) {
-        console.log('Error in sendMessage controlller: ',error.message);
-        res.status(500).json({error:"Internal server error"});
+        console.log('Error in sendMessage controlller: ', error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+export const getChatPartners = async (req, res) => {
+    try {
+        const loggedInUserId = req.user._id;
+        // find all the messages where the logged in user is sender or receiver
+        const messages = await Message.find({
+            $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }]
+        });
+        // if the sender is me i want to get the other user
+        const chatPartnerIds = [
+            ...new Set(
+                messages.map((msg) => msg.senderId.toString() === loggedInUserId.toString() ? msg.receiverId.toString() : msg.senderId.toString())
+            )
+        ]
+        const chatPartners = await User.find({ _id: { $in: chatPartnerIds } }).select("-password")
+        res.status(200).json(chatPartners)
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" })
     }
 }
