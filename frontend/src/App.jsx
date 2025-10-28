@@ -23,7 +23,10 @@ const App = () => {
       <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px]" />
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px]" />
     
-      <Routes>
+  {/* Toast container (renders toasts triggered anywhere in the app) */}
+  <Toaster position="top-right" />
+
+  <Routes>
         <Route path="/" element={authUser ? <ChatPage />: <Navigate to="/login"/>} ></Route>
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"}/>}></Route>
         <Route path="/signup" element={!authUser ? <SignUp /> : <Navigate to={"/"}/>}></Route>
