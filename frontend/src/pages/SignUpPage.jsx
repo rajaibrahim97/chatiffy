@@ -57,7 +57,7 @@ const SignUp = () => {
                 <div>
                   <label htmlFor="" className='auth-input-label'>Password</label>
                   <div className='relative'>
-                    <MailIcon className='auth-input-icon' />
+                    <LockIcon className='auth-input-icon' />
                     <input type="password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })} className='input' placeholder='Enter Your Password'
@@ -65,7 +65,7 @@ const SignUp = () => {
                   </div>
                 </div>
                 {/* SUMBIT BUTTON */}
-                <button className='auth-btn cursor-pointer' type="submit">
+                <button className='auth-btn cursor-pointer' type="submit" disabled={isSigningUp}>
                   {isSigningUp ? (
                     <LoaderIcon className='w-full h-5 animate-spin text-center' />
                   ) : (
