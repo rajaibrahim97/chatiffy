@@ -1,16 +1,16 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {useChatStore} from '../lib/store/useChatStore'
 import BorderAnimatedContainer from '../components/BorderAnimatedContainer'
-import ChatContainer from '../components/ChatContainer'
 import NoConversationPlaceholder from '../components/NoConversationPlaceholder'
 import ProfileHeader from '../components/ProfileHeader'
 import ActiveTabSwitch from '../components/ActiveTabSwitch'
 import ContactList from '../components/ContactList'
 import ChatContainer from '../components/ChatContainer'
+import ChatList from '../components/ChatList'
 
 
 const ChatPage = () => {
-  const { logout } = useChatStore()
+  const { activeTab, selectedUser } = useChatStore()
   return (
     <div className='relative w-full max-w-6xl h-[800px] '>
       <BorderAnimatedContainer>
