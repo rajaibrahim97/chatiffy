@@ -7,14 +7,25 @@ import NoChatHistoryPlaceholder from './NoChatHistoryPlaceholder';
 import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessageLoadingSkeleton';
 const ChatContainer = () => {
-  const {getMessagesByUserId,selectedUser,isMessagesLoading,messages} = useChatStore();
+  const {getMessagesByUserId,
+    selectedUser,
+    isMessagesLoading,
+    messages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+  } = useChatStore();
+
   const {authUser} = useAuthStore();
 
   const messageEndRef = useRef(null);
  
   useEffect(()=>{
     getMessagesByUserId(selectedUser._id);
-  },[selectedUser,getMessagesByUserId])
+    subscribeToMessages()
+
+    // cleanup
+    return () => unsubscribeFromMessages();
+  },[selectedUser,getMessagesByUserId,unsubscribeFromMessages,subscribeToMessages])
 
   // to scroll to last msg everytime on reload or reopen chat
 
@@ -53,6 +64,7 @@ const ChatContainer = () => {
                     </div>
                   </div>
                 ))}
+                {/* CHAT SCROLL STARTS HERE */}
                 <div ref={messageEndRef}/>
             </div>
           ) : isMessagesLoading ? <MessagesLoadingSkeleton/> : (

@@ -83,7 +83,7 @@ const MessageInput = () => {
             <button
                 type='button'
                 onClick={()=>fileInputRef.current?.click()}
-                className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-4 transition-colors ${
+                className={`bg-slate-800/50 cursor-pointer -slate-400 hover:text-slate-200 rounded-lg px-4 transition-colors ${
                     imagePreview ? "text-cyan-500":""
                 }`}
             >
