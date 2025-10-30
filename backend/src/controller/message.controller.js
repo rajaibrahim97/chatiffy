@@ -1,7 +1,7 @@
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
-
+import {io,getRecieverSocketId}  from "../lib/socket.js"
 
 export const getAllContacts = async (req, res) => {
     try {
@@ -59,7 +59,12 @@ export const sendMessage = async (req, res) => {
             image: imageUrl,
         })
 
-        await newMessage.save()
+        await newMessage.save();
+        // send message in real-time if user is online - socket.io
+        const receiverSocketId = getRecieverSocketId(receiverId);
+        if(receiverSocketId){
+            io.to(receiverSocketId).emit("newMessage",newMessage)
+        }
 
         // realtime chat using socket.io
         res.status(201).json(newMessage);
